@@ -31,7 +31,7 @@ module.exports = (app) => {
               next()
        }, sliderAPI.createNewSlider)
        app.get('/api/stroyka/get/team', teamAPI.teamGet)
-       app.get('/api/admin/getAllProducts',productAPI.getProductAdmin)
+       app.get('/api/admin/get/allproducts',productAPI.getProductAdmin)
        app.post('/api/admin/createNewBanner', upload.uploadBanner, parseForm, async function (req, res, next) {
               if (upload.error_response.errors.length > 0) {
                      res.status(402).json(upload.error_response)
