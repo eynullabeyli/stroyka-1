@@ -23,6 +23,20 @@ const getProduct = async (req, res) => {
               res.status(404).send("Invalid")
        }
 }
+const getProductAdmin = async (req, res) => {
+       try {
+              // swagger.tags = ['Product']
+              await prisma.$connect;
+              const products = await prisma.product.findMany({
+		      include: {
+                            category: true
+                     }
+              });
+              res.status(200).json(products)
+       } catch (e) {
+              res.status(404).send("Invalid")
+       }
+}
 const getProductByID = async (req, res) => {
        try {
               let search__ = (req.params.slug)
@@ -64,7 +78,10 @@ const getProductByCategory = async (req, res) => {
               })
               const products = await prisma.product.findMany({
                      where: {
-                            cat_id: category__.uniq_id
+                            AND:[
+                                   {status:'active'},
+                                   {cat_id: category__.uniq_id}
+                            ]
                      },
                      include: {
                             category: true,
@@ -92,7 +109,10 @@ const getProductBySubCategory = async (req, res) => {
               })
               const products = await prisma.product.findMany({
                      where: {
-                            subcat_id: subcategory__.uniq_id
+                            AND:[
+                                   {status:'active'},
+                                   {subcat_id: subcategory__.uniq_id}
+                            ]
                      },
                      include: {
                             category: true,
@@ -121,7 +141,10 @@ const getProductByAltCategory = async (req, res) => {
               })
               const products = await prisma.product.findMany({
                      where: {
-                            altcat_id: altcategory__.uniq_id
+                            AND:[
+                                   {status:'active'},
+                                   {altcat_id: altcategory__.uniq_id}
+                            ]
                      },
                      include: {
                             category: true,
@@ -145,11 +168,16 @@ const filterPriceBySubCat = async (req, res) => {
                             let minPrice = parseFloat(req.body.min_price);
                             const productFilter = await prisma.product.findMany({
                                    where: {
-                                          subcat_id: subcategory,
-                                          price: {
-                                                 gte: minPrice,
-                                                 lte: maxPrice
-                                          }
+                                          AND:[
+                                                 {status:'active'},
+                                                 {subcat_id: subcategory},
+                                                 {
+                                                        price: {
+                                                        gte: minPrice,
+                                                        lte: maxPrice
+                                                        }
+                                                 }
+                                          ]
                                    },
                                    include: {
                                           category: true,
@@ -181,11 +209,17 @@ const filterPriceByAltCat = async (req, res) => {
                      let minPrice = parseFloat(req.body.min_price);
                      const productFilter = await prisma.product.findMany({
                             where: {
-                                   altcat_id: altcategory,
-                                   price: {
+                                  AND:[
+                                   {status:'active'},
+                                   {altcat_id: altcategory},
+                                   {
+                                          price: {
                                           gte: minPrice,
                                           lte: maxPrice
+                                          }
                                    }
+
+                                  ]
                             },
                             include: {
                                    category: true,
@@ -212,11 +246,14 @@ const filterPriceByCategory = async (req, res) => {
                      let minPrice = parseFloat(req.body.min_price);
                      const productFilter = await prisma.product.findMany({
                             where: {
-                                   cat_id: category,
-                                   price: {
-                                          gte: minPrice,
-                                          lte: maxPrice
-                                   }
+                                   AND:[
+                                          {status:'active'},
+                                          {cat_id: category},
+                                          {price: {
+                                                 gte: minPrice,
+                                                 lte: maxPrice
+                                          }}
+                                   ]
                             },
                             include: {
                                    category: true
@@ -243,9 +280,12 @@ const liveSearchProduct = async (req, res) => {
                      if (requestLanguage == 'az') {
                             productSearch = await prisma.product.findMany({
                                    where: {
-                                          name_az: {
-                                                 contains: requestParam
-                                          }
+                                          AND:[
+                                                 {status:'active'},
+                                                 {name_az: {
+                                                        contains: requestParam
+                                                 }}
+                                          ]
                                    },
                                    include: {
                                           category: true
@@ -254,9 +294,12 @@ const liveSearchProduct = async (req, res) => {
                      } else if (requestLanguage == 'en') {
                             productSearch = await prisma.product.findMany({
                                    where: {
-                                          name_en: {
-                                                 contains: requestParam
-                                          }
+                                          AND:[
+                                                 {status:'active'},
+                                                 {name_en: {
+                                                        contains: requestParam
+                                                 }}
+                                          ]
                                    },
                                    include: {
                                           category: true
@@ -265,9 +308,12 @@ const liveSearchProduct = async (req, res) => {
                      } else {
                             productSearch = await prisma.product.findMany({
                                    where: {
-                                          name_ru: {
-                                                 contains: requestParam
-                                          }
+                                          AND:[
+                                                 {status:'active'},
+                                                 {name_ru: {
+                                                        contains: requestParam
+                                                 }}
+                                          ]
                                    },
                                    include: {
                                           category: true
@@ -277,25 +323,34 @@ const liveSearchProduct = async (req, res) => {
                      if (requestLanguage == 'az') {
                             productSearchCount = await prisma.product.count({
                                    where: {
-                                          name_az: {
-                                                 contains: requestParam
-                                          }
+                                          AND:[
+                                                 {status:'active'},
+                                                 {name_az: {
+                                                        contains: requestParam
+                                                 }}
+                                          ]
                                    }
                             })
                      } else if (requestLanguage == 'en') {
                             productSearchCount = await prisma.product.count({
                                    where: {
-                                          name_en: {
-                                                 contains: requestParam
-                                          }
+                                         AND:[
+                                                 {status:'active'},
+                                                 { name_en: {
+                                                        contains: requestParam
+                                                 }}
+                                         ]
                                    }
                             })
                      } else {
                             productSearchCount = await prisma.product.count({
                                    where: {
-                                          name_ru: {
-                                                 contains: requestParam
-                                          }
+                                          AND:[
+                                                 {status:'active'},
+                                                 {name_ru: {
+                                                        contains: requestParam
+                                                 }}
+                                          ]
                                    }
                             })
                      }
@@ -392,7 +447,10 @@ const getProductIsFeatured = async (req, res) => {
               await prisma.$connect;
               const products = await prisma.product.findMany({
                      where: {
-                            isFeatured: true
+                            AND:[
+                                   {status:'active'},
+                                   {isFeatured: true}
+                            ]
                      },
                      include: {
                             category: true,
@@ -412,7 +470,10 @@ const getProductIsBestseller = async (req, res) => {
               await prisma.$connect;
               const products = await prisma.product.findMany({
                      where: {
-                            isBestseller: true
+                            AND:[
+                                   {status:'active'},
+                                   {isBestseller: true}
+                            ]
                      },
                      include: {
                             category: true,
@@ -443,6 +504,9 @@ const getProductByCategoryBestseller = async (req, res) => {
               const products = await prisma.product.findMany({
                      where: {
                             AND: [
+                                   {
+                                          status:'active'
+                                   },
                                    {
                                           cat_id: category__.uniq_id
                                    },
@@ -481,6 +545,7 @@ const getProductByCategoryFeatured = async (req, res) => {
               const products = await prisma.product.findMany({
                      where: {
                             AND: [
+                                   {status:'active'},
                                    {
                                           cat_id: category__.uniq_id
                                    },
@@ -661,6 +726,7 @@ module.exports = {
        updateProductIsBestseller,
        getProductByCategoryBestseller,
        getProductByCategoryFeatured,
-       updateProductImage
+       updateProductImage,
+       getProductAdmin
 }
 
