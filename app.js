@@ -91,14 +91,14 @@ app.post('/api/stroyka/logout/user', isAuthenticated,middlewares_auth.authentica
               next();
        }
 }, UserAPI.UserLogout)
-app.post('/api/stroyka/checkout', middlewares_auth.authenticateToken, (err, req, res, next) => {
+app.post('/api/stroyka/checkout', isAuthenticated,middlewares_auth.authenticateToken, (err, req, res, next) => {
        if (err.name === "TokenExpiredError") {
               return res.status(401).send("Invalid token");
        } else {
               next();
        }
 }, checkOutAPI.checkOut)
-app.put('/api/stroyka/user/update/password', middlewares_auth.authenticateToken, (err, req, res, next) => {
+app.put('/api/stroyka/user/update/password', isAuthenticated,middlewares_auth.authenticateToken, (err, req, res, next) => {
        if (err) {
               return res.status(401).send("Invalid token")
        }
@@ -112,7 +112,7 @@ app.get('/api/stroyka/get/product/bestseller', productAPI.getProductIsBestseller
 app.get('/api/stroyka/get/product/bestseller/category/:category', productAPI.getProductByCategoryBestseller)
 app.get('/api/stroyka/get/product/featured/category/:category', productAPI.getProductByCategoryFeatured)
 app.put('/api/stroyka/update/checkoutStatus', checkOutAPI.checkoutStatusUpdate)
-app.put('/api/stroyka/user/updateData', middlewares_auth.authenticateToken, (err, req, res, next) => {
+app.put('/api/stroyka/user/updateData',isAuthenticated, middlewares_auth.authenticateToken, (err, req, res, next) => {
        if (err.name === "TokenExpiredError") {
               return res.status(401).send("Invalid token");
        } else {
