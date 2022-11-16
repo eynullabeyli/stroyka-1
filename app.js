@@ -5,6 +5,8 @@ var bodyParser = require('body-parser')
 const middlewares_validation = require('./middlewares/validation')
 const middlewares_auth = require('./middlewares/jwt_auth');
 const port = 3005;
+var session = require('express-session')
+
 const productAPI = require('./controller/ProductController')
 const altCategoryAPI = require("./controller/AltCategoryController");
 const subCatAPI = require('./controller/SubCategoryController')
@@ -20,12 +22,24 @@ const sliderAPI = require('./controller/SliderController')
 const bannerAPI = require('./controller/BannerController')
 var { body } = require('express-validator');
 var cors = require('cors')
+
 const swaggerUi = require('swagger-ui-express')
 const swaggerFile = require('./swagger_output.json');
 var corsOptions = {
        origin: ['https://adminstroyka.eynullabeyli.com', 'https://18.212.195.169', 'http://stroyka.eynullabeyli.com', 'https://stroyka.eynullabeyli.com', 'http://localhost:3000', 'http://localhost:3001'],
        optionsSuccessStatus: 200
 }
+app.set('trust proxy', 1)
+app.use(session({
+       secret: 'sessionId',
+       resave: false,
+       saveUninitialized: true
+}))
+function isAuthenticated (req, res, next) {
+       if (req.session.user) next()
+       else next('route')
+}
+     
 app.use(cors(corsOptions))
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
@@ -57,11 +71,20 @@ app.post('/api/stroyka/contactus/', contactAPI.postContact)
 
 
 app.post('/api/stroyka/register/user', UserAPI.UserRegister)
-app.post('/api/stroyka/login/user', UserAPI.UserLogin)
+app.post('/api/stroyka/login/user', function(req,res,next){
+       req.session.regenerate(function(err) {
+              if (err) return res.json({"msg": "unauthorized"})
+              req.session.user = req.body.user
+              req.session.save(function(err){
+                     if (err) return err;
+                     next();
+              })
+       })
+},UserAPI.UserLogin)
 app.get('/api/stroyka/user/me', UserAPI.userData)
 app.get('/api/stroyka/product/livesearch', productAPI.liveSearchProduct);
 app.get('/api/getImage/:public/:uploads/:folder/:image', imageAPI.getImage)
-app.post('/api/stroyka/logout/user', middlewares_auth.authenticateToken, (err, req, res, next) => {
+app.post('/api/stroyka/logout/user', isAuthenticated,middlewares_auth.authenticateToken, (err, req, res, next) => {
        if (err.name === "TokenExpiredError") {
               return res.status(401).send("invalid token...");
        } else {

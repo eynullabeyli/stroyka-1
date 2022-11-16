@@ -41,7 +41,7 @@ const getProductByID = async (req, res) => {
        try {
               let search__ = (req.params.slug)
               await prisma.$connect;
-              const product = await prisma.product.findUnique({
+              const product = await prisma.product.findFirst({
                      where: {
 			    AND: [
 				{
